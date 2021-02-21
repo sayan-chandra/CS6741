@@ -3,6 +3,7 @@ using Random
 Random.seed!(6)
 mn=-10000
 mx=10000
+
 lst1=[]
 lst2=[]
 ad=0
