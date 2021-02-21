@@ -1,12 +1,12 @@
 using Plots
 using Random
 Random.seed!(6)
-mn=-100
-mx=100
+mn=-10000
+mx=10000
 lst1=[]
 lst2=[]
 ad=0
-for N in 1:10000
+for N in 1:100000
     push!(lst1,N)
     global ad+=rand(mn:mx)
     push!(lst2,ad/N)
