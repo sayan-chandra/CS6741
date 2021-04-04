@@ -41,19 +41,6 @@ end
 md"# Question-2
 **=solution==>**"
 
-# ╔═╡ dedf94a2-92e6-11eb-2129-41d0a82107b3
-begin
-	plotss=[]
-	plt=[]
-	gr()
-end
-
-# ╔═╡ 1c65f770-92e6-11eb-084d-5f3c033644dd
-plotss[1]
-
-# ╔═╡ 2e0f7370-92e6-11eb-39bb-4d4b8aa82fef
-plt[1]
-
 # ╔═╡ 01fc4f80-92e9-11eb-093a-077c607d4e25
 md"# Question-3
 **=solution==>**"
@@ -261,69 +248,80 @@ begin
 end
 
 # ╔═╡ 3747c01e-92e4-11eb-2d30-096ca5f402db
-function Question2(N)
-	empty!(plotss)
-	empty!(plt)
-	function KLDiv(array, mu, sigma)
-		normalDiscrete=[pdf(Normal(mu, sigma),x) for x in range]
-		summ=0
-		for i in 1:length(range)
-		   if array[i]>0
-			 summ+=array[i]*log2(array[i]/ normalDiscrete[i])
-		   end
+begin
+	plotss=[]
+	plt=[]
+	gr()
+	function Question2(N)
+		empty!(plotss)
+		empty!(plt)
+		function KLDiv(array, mu, sigma)
+			normalDiscrete=[pdf(Normal(mu, sigma),x) for x in range]
+			summ=0
+			for i in 1:length(range)
+			   if array[i]>0
+				 summ+=array[i]*log2(array[i]/ normalDiscrete[i])
+			   end
+			end
+			return summ/num
 		end
-		return summ/num
+		
+		function fitData(distArr, kp)
+			μ=sum([i*kp[i] for i in range])/(num-1)
+			σ=sqrt(sum([i^2*kp[i] for i in range])/(num-1) - μ^2)
+			push!(KLD, KLDiv(distArr, μ, σ))
+			push!(plotss, plot!(x->x, x->pdf(Normal(μ, σ), x), range, label=false))
+		end
+		
+		uf=Uniform(0,1)
+		step=0.005
+		num=1/step + 1
+		range=-5:step:10
+		keep=Dict()
+		KLD=[]
+		
+		
+		initt=[pdf(uf,k) for k in range]
+		initdict=Dict([(k, pdf(uf,k)) for k in range])
+		push!(plotss, plot(range, initt, label=false))
+		fitData(initt,initdict)
+		
+		idx=1:length(range)
+		conv(x) = sum([pdf(uf,x-k)*pdf(uf,k) for k in range])
+		arr=conv.(range)/num
+		for go in idx
+		    keep[range[go]]=arr[go]
+		end
+		push!(plotss, plot!(range, arr, label=false))
+		fitData(arr,keep)
+		
+		
+		
+		arr1=[]
+		keep1=keep
+		conv1(x) = sum([keep1[k]*pdf(uf,x-k) for k in range])
+		for j in 2:N
+		  arr1=conv1.(range)/num
+		  for go in idx
+		    keep1[range[go]]=arr1[go]
+		  end	
+		  push!(plotss, plot!(range, arr1, label=false))
+		  fitData(arr1,keep1)
+		end
+		
+		push!(plt, plot(2:N, KLD[2:N], title="kl-divergence plot",label=false, line=2, color=:black, ylabel="KL-divergence values", xlabel="number of disbritutions convoluted"))
+		print(KLD)
 	end
-	
-	function fitData(distArr, kp)
-		μ=sum([i*kp[i] for i in range])/(num-1)
-		σ=sqrt(sum([i^2*kp[i] for i in range])/(num-1) - μ^2)
-		push!(KLD, KLDiv(distArr, μ, σ))
-		push!(plotss, plot!(x->x, x->pdf(Normal(μ, σ), x), range, label=false))
-	end
-	
-	uf=Uniform(0,1)
-	step=0.005
-	num=1/step + 1
-	range=-5:step:10
-	keep=Dict()
-	KLD=[]
-	
-	
-	initt=[pdf(uf,k) for k in range]
-	initdict=Dict([(k, pdf(uf,k)) for k in range])
-	push!(plotss, plot(range, initt, label=false))
-	fitData(initt,initdict)
-	
-	idx=1:length(range)
-	conv(x) = sum([pdf(uf,x-k)*pdf(uf,k) for k in range])
-	arr=conv.(range)/num
-	for go in idx
-	    keep[range[go]]=arr[go]
-	end
-	push!(plotss, plot!(range, arr, label=false))
-	fitData(arr,keep)
-	
-	
-	
-	arr1=[]
-	keep1=keep
-	conv1(x) = sum([keep1[k]*pdf(uf,x-k) for k in range])
-	for j in 2:N
-	  arr1=conv1.(range)/num
-	  for go in idx
-	    keep1[range[go]]=arr1[go]
-	  end	
-	  push!(plotss, plot!(range, arr1, label=false))
-	  fitData(arr1,keep1)
-	end
-	
-	push!(plt, plot(2:N, KLD[2:N], title="kl-divergence plot",label=false, line=2, color=:black, ylabel="KL-divergence values", xlabel="number of disbritutions convoluted"))
-	print(KLD)
 end
 
 # ╔═╡ d82ee490-92e5-11eb-20e6-a3a4300ccb2c
 Question2(10)
+
+# ╔═╡ 1c65f770-92e6-11eb-084d-5f3c033644dd
+plotss[1]
+
+# ╔═╡ 2e0f7370-92e6-11eb-39bb-4d4b8aa82fef
+plt[1]
 
 # ╔═╡ ccbaecd0-92f4-11eb-238f-b97a17cf7496
 begin
@@ -355,7 +353,6 @@ end
 # ╠═e42bca80-931a-11eb-3f1b-5f15ab9c5e9a
 # ╠═d6652870-92e2-11eb-0e3b-25cdca7f0576
 # ╟─2d96abe0-92e4-11eb-32a9-27aaadcd6e13
-# ╠═dedf94a2-92e6-11eb-2129-41d0a82107b3
 # ╠═3747c01e-92e4-11eb-2d30-096ca5f402db
 # ╠═d82ee490-92e5-11eb-20e6-a3a4300ccb2c
 # ╠═1c65f770-92e6-11eb-084d-5f3c033644dd
